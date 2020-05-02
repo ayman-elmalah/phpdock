@@ -1,0 +1,96 @@
+version: '3'
+
+networks:
+  backend:
+
+services:
+  php:
+      build:
+        context: ./php
+        dockerfile: Dockerfile
+      container_name: php
+      volumes:
+        - ../src:/var/www/html
+      ports:
+        - "${PHP_PORT}:${PHP_HOST_PORT}"
+      networks:
+        - backend
+
+  mysql:
+      image: mysql:${MYSQL_VERSION}
+      container_name: mysql
+      restart: always
+      tty: true
+      ports:
+        - "${MYSQL_PORT}:${MYSQL_HOST_PORT}"
+      environment:
+        MYSQL_DATABASE: ${MYSQL_DATABASE}
+        MYSQL_USER: ${MYSQL_USER}
+        MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+        MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+        SERVICE_TAGS: dev
+        SERVICE_NAME: mysql
+      networks:
+        - backend
+
+  nginx:
+      image: nginx:${NGINX_VERSION}
+      container_name: nginx
+      ports:
+        - "${NGINX_PORT}:${NGINX_HOST_PORT}"
+      volumes:
+        - ../src:/var/www/html
+        - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
+      depends_on:
+        - php
+        - mysql
+      networks:
+        - backend
+
+  phpmyadmin:
+      image: phpmyadmin/phpmyadmin:${PHPMYADMIN_VERSION}
+      container_name: phpmyadmin
+      restart: always
+      ports:
+        - "${PHPMYADMIN_PORT}:${PHPMYADMIN_HOST_PORT}"
+      depends_on:
+        - php
+        - mysql
+      environment:
+        PMA_HOST: ${PMA_HOST}
+        MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      networks:
+        - backend
+
+  composer:
+      image: composer:${COMPOSER_VERSION}
+      container_name: composer
+      volumes:
+        - ../src:/var/www/html
+      working_dir: /var/www/html
+      depends_on:
+        - php
+      networks:
+        - backend
+
+  artisan:
+      build:
+        context: ./php
+        dockerfile: Dockerfile
+      container_name: artisan
+      volumes:
+        - ../src:/var/www/html
+      depends_on:
+        - mysql
+      working_dir: /var/www/html
+      entrypoint: ['php', '/var/www/html/artisan']
+      networks:
+        - backend
+
+  npm:
+      image: node:${NODE_VERSION}
+      container_name: npm
+      volumes:
+        - ../src:/var/www/html
+      working_dir: /var/www/html
+      entrypoint: ['npm']
