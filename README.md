@@ -6,3 +6,6 @@ cd phpdock/phpdock
 rename .env.example to .env and configure your settings
 the run this command
 docker-compose build && docker-compose up -d
+
+Visit 127.0.0.1:8080 for php
+Visit 127.0.0.1:8082 for phpmyadmin
