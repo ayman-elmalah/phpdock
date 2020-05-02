@@ -9,3 +9,5 @@ docker-compose build && docker-compose up -d
 
 Visit 127.0.0.1:8080 for php
 Visit 127.0.0.1:8082 for phpmyadmin
+You can follow a guide to understand how to build it from here
+https://www.ayman-elmalah.com/articles/dockerize-php-application
